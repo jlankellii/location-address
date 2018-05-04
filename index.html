@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>地址选择</title>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <style>
+        .address-input-box{
+            display: flex;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+        }
+    </style>
+</head>
+<body>
+<div class="address-info">
+    <div class="address-input-box">
+        <div class="input-group"><input class="form-control" id="pro-city-county" type="text" name="" value="" placeholder="区县" readonly></div>
+        <div class="input-group"><input class="form-control" type="text" name="address" value="" placeholder="详细地址"></div>
+    </div>
+    <div class="iframe-box"><iframe src="map.html" width="100%" height="1000px" scrolling="no" frameborder="0"></iframe></div>
+    <input type="hidden" name="lng" value="">
+    <input type="hidden" name="lat" value="">
+    <input type="hidden" name="proName" value="">
+    <input type="hidden" name="cityName" value="">
+    <input type="hidden" name="countyName" value="">
+    <input type="hidden" name="pro" value="">
+    <input type="hidden" name="city" value="">
+    <input type="hidden" name="county" value="">
+    <input type="hidden" name="address" value="">
+    <input id="fullAddress" type="hidden" name="" value="">
+</div>
+<script src="jquery.min.js"></script>
+<script src="bootstrap.min.js"></script>
+<script>
+    function geocoder_CallBack(data, lnglatXY) {
+        var address = data.regeocode.formattedAddress;
+        var province = data.regeocode.addressComponent.province; //	String	所在省
+        var city = data.regeocode.addressComponent.city; //String	所在城市
+        var citycode = data.regeocode.addressComponent.citycode; //	String	所在城市编码
+        var district = data.regeocode.addressComponent.district; //	String	所在区
+        var adcode = data.regeocode.addressComponent.adcode; //	String	所在区域编码
+        var township = data.regeocode.addressComponent.township; //	String	所在乡镇
+        var street = data.regeocode.addressComponent.street; //	String	所在街道
+        var streetNumber = data.regeocode.addressComponent.streetNumber; //	String	门牌号
+        var neighborhood = data.regeocode.addressComponent.neighborhood; //	String	所在社区
+        var neighborhoodType = data.regeocode.addressComponent.neighborhoodType; //	String	社区类型
+        var building = data.regeocode.addressComponent.building; //	String	所在楼/大厦
+        var buildingType = data.regeocode.addressComponent.buildingType; //	String	楼类型
+        var businessAreas = data.regeocode.addressComponent.businessAreas; //	Array.<BusinessArea>	仅逆地理编码时返回，所属商圈信息
+        var longitude = lnglatXY[0];
+        var latitude = lnglatXY[1];
+        $("input[name='lng']").val(longitude);
+        $("input[name='lat']").val(latitude);
+        $("input[name='proName']").val(province);
+        $("input[name='cityName']").val(city);
+        $("input[name='countyName']").val(district);
+        $("input[name='pro']").val(adcode.substring(0, 2) + "0000");
+        $("input[name='city']").val(adcode.substring(0, 4) + "00");
+        $("input[name='county']").val(adcode);
+        $("input[name='address']").val(address.split(district)[1]);
+        $("#fullAddress").val(address);
+        $("#pro-city-county").val(province + city + district);
+        $("input[name='address']").change(function () {
+            $("#fullAddress").val($("#pro-city-county").val() + $("input[name='address']").val());
+        })
+        //console.log("ffff:"+adcode.substring(0, 2) + "0000")
+    }
+</script>
+</body>
+</html>

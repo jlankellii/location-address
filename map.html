@@ -1,0 +1,133 @@
+﻿<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>输入提示后查询</title>
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css" />
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=6a5e6fc4c664362f826c75240d0b585f&plugin=AMap.Autocomplete,AMap.PlaceSearch,AMap.Geocoder"></script>
+    <!--<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=9e479559c0a4c9591b046167a4fef459&plugin=AMap.Geocoder"></script>-->
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <style>
+        #myPageTop input {
+            width: 280px;
+            height: 2rem;
+            line-height: 2rem;
+            border: 0px;
+            outline:none;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        #myPageTop {
+            background-color: #FFFFFF;
+            border: 0px;
+            padding: 0px;
+            box-shadow: 1px 2px 1px rgba(0, 0, 0, .15);
+        }
+    </style>
+</head>
+
+<body>
+<div id="container"></div>
+<div id="myPageTop">
+    <table>
+        <tr>
+            <td>
+                <input id="tipinput" placeholder="请输入地点关键字查询"/>
+            </td>
+        </tr>
+    </table>
+</div>
+<script type="text/javascript">
+    //地图加载
+    var marker, map = new AMap.Map("container", {
+        resizeEnable: true
+    });
+ /*   map.plugin('AMap.Geolocation', function() {
+        geolocation = new AMap.Geolocation({
+            enableHighAccuracy: true, //是否使用高精度定位，默认:true
+            timeout: 10000, //超过10秒后停止定位，默认：无穷大
+            buttonOffset: new AMap.Pixel(10, 20), //定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            zoomToAccuracy: true, //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+            buttonPosition: 'RB'
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition();
+        //				AMap.event.addListener(geolocation, 'complete', onComplete); //返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError); //返回定位出错信息
+    });*/
+    var lnglatXY;
+    map.on('click', function(e) {
+        var lng = e.lnglat.getLng();
+        var lat = e.lnglat.getLat();
+        if (marker) {
+            marker.setMap(null);
+            marker = null;
+        }
+        addMarker(lng, lat);
+        // 设置点标记的动画效果，此处为弹跳效果
+        marker.setAnimation('AMAP_ANIMATION_BOUNCE');
+        lnglatXY = [lng, lat]; //已知点坐标
+        regeocoder();
+    });
+    //输入提示
+    var autoOptions = {
+        input: "tipinput"
+    };
+    var auto = new AMap.Autocomplete(autoOptions);
+    var placeSearch = new AMap.PlaceSearch({
+        map: map,
+        pageSize: 10,
+        extensions: 'all'
+    }); //构造地点查询类
+    AMap.event.addListener(auto, "select", select); //注册监听，当选中某条记录时会触发
+    function select(e) {
+        placeSearch.setCity(e.poi.adcode);
+        placeSearch.search(e.poi.name, function(status, result) {
+            placeSearch.clear(); //清除搜索的POI结果
+        }); //关键字查询查询
+    }
+    // 实例化点标记
+    function addMarker(lng, lat) {
+        if (marker) {
+            return;
+        }
+        marker = new AMap.Marker({
+            icon: "http://webapi.amap.com/theme/v1.3/markers/n/mark_b.png",
+            position: [lng, lat]
+        });
+        marker.setMap(map);
+    }
+
+    function regeocoder() { //逆地理编码
+        var geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+        });
+        geocoder.getAddress(lnglatXY, function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+                //console.log(result)
+                //console.log(lnglatXY)
+                window.parent.geocoder_CallBack(result,lnglatXY);
+            }
+        });
+        //      var marker = new AMap.Marker({  //加点
+        //          map: map,
+        //          position: lnglatXY
+        //      });
+        map.setFitView();
+    }
+
+    /* function geocoder_CallBack(data) {
+     var address = data.regeocode.formattedAddress; //返回地址描述
+     //				alert(address)
+     //document.getElementById("result").innerHTML = address;
+     console.log(address)
+     } */
+</script>
+</body>
+
+</html>
